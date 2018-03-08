@@ -92,6 +92,7 @@ class Game(Base):
             for user_name in user_names.keys():
                 if user_name in string:
                     return user_names[user_name]
+            raise ValueError
 
         def determine_house(string):
             houses = ['Lannister', 'Tyrell', 'Stark', 'Greyjoy', 'Martell', 'Baratheon']
@@ -148,7 +149,10 @@ class Game(Base):
             move.phase = ths[1].text
             move.log_entry = tds[2].text
             move.date = datetime.strptime(tds[-1].text, '%Y-%b-%d, %H:%M')
-
+            if 'GAME ABORTED' in move.log_entry:
+                self.aborted = True
+                session.add(move)
+                return self
             # move.house =
             if not self.start_date or self.start_date < move.date:
                 self.start_date = move.date
@@ -198,7 +202,7 @@ class Game(Base):
             else:  # What if nothing works?
                 continue
             move.user_id = house_to_user_id(self, determine_house(move.log_entry))
-            print(move.describe())
+            # print(move.describe())
             if not move.user_id:
                 raise ValueError('wtf guys')
             session.add(move)
