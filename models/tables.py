@@ -30,7 +30,6 @@ class Game(Base):
 
     def parse(self, session, review=None, log=None):
         self.game_id = int(re.search(r'(Events of Game )([0-9]+).+', log.find('h4').text).group(2))
-        print(self.game_id)
         if not review and not log:
             raise ValueError("Must provide at least one soup")
         if review:
