@@ -1,46 +1,33 @@
 from bs4 import BeautifulSoup
 from models import Game, Session, Base, engine
+from multiprocessing.dummy import Pool as ThreadPool
 import os
 
 
-def main(start, end):
-    session = Session()
-    id_list = [x for x in range(start, end)]
-    for game_id in id_list:
-        try:
+def main(game_id):
+    try:
+        with open(f'game_logs/{game_id}') as game_log_file:
             with open(f'reviews/{game_id}') as review_file:
-                clean = review_file.read()
-                review = BeautifulSoup(clean, 'html.parser')
-                game = Game().parse(review, session)
-                print(game)
-
-            with open(f'game_logs/{game_id}') as game_log_file:
+                session = Session()
                 game_log = BeautifulSoup(game_log_file, 'html.parser')
+                review = BeautifulSoup(review_file, 'html.parser')
+                Game().parse(session, review=review, log=game_log)
+                session.commit()
+    except:
+        with open('logs/parse_errors.txt', 'a') as log:
+            log.write(game_id + '\n')
 
-        except EnvironmentError:
-            with open('parse_errors.txt', 'a') as error_log:
-                error_log.write(f'{game_id}\n')
-                print(f'Error with id {game_id}')
+
+def main_threaded():
+    pool = ThreadPool(4)
+    game_ids = list(set(os.listdir('game_logs/')).union(os.listdir('reviews/')))
+    print(game_ids)
+    # pool.map(main, game_ids)
+
 
 if __name__ == '__main__':
     Base.metadata.create_all(engine)
-    i = 0
-    for game_id in os.listdir('game_logs/'):
-        i += 1
-        with open(f'game_logs/{game_id}') as game_log_file:
-                with open(f'reviews/{game_id}') as review_file:
-                    try:
-                        session = Session()
-                        game_log = BeautifulSoup(game_log_file, 'html.parser')
-                        review = BeautifulSoup(review_file, 'html.parser')
-                        game = Game().parse(session, review=review, log=game_log)
-                        session.commit()
-                        if int(i) % 20 == 0:
-                            print(f'Finished game id {game_id}')
-                    except:
-                        with open('logs/parse_errors.txt', 'a') as log:
-                            log.write(game_id + '\n')
-
+    main_threaded()
 
 # if __name__ == '__main__':
 #     game_id = 106230
