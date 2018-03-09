@@ -1,6 +1,5 @@
 from bs4 import BeautifulSoup
-from models.tables import Game
-from models import Session
+from models import Game, Session, Base, engine
 import os
 
 
@@ -24,11 +23,10 @@ def main(start, end):
                 print(f'Error with id {game_id}')
 
 if __name__ == '__main__':
+    Base.metadata.create_all(engine)
     i = 0
     for game_id in os.listdir('game_logs/'):
         i += 1
-        if i > 100:
-            break
         with open(f'game_logs/{game_id}') as game_log_file:
                 with open(f'reviews/{game_id}') as review_file:
                     try:

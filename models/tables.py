@@ -1,7 +1,6 @@
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-from models import engine
 import re
 from datetime import datetime
 
@@ -290,4 +289,4 @@ class User_Game(Base):
 
 
 
-Base.metadata.create_all(engine)
+
