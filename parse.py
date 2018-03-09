@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
-from models.tables import Game, User, Move
-from models import Session, engine
+from models.tables import Game
+from models import Session
 import os
 
 
@@ -42,3 +42,14 @@ if __name__ == '__main__':
                     except:
                         with open('logs/parse_errors.txt', 'a') as log:
                             log.write(game_id + '\n')
+
+
+# if __name__ == '__main__':
+#     game_id = 106230
+#     with open(f'game_logs/{game_id}') as game_log_file:
+#         with open(f'reviews/{game_id}') as review_file:
+#             session = Session()
+#             game_log = BeautifulSoup(game_log_file, 'html.parser')
+#             review = BeautifulSoup(review_file, 'html.parser')
+#             game = Game().parse(session, review=review, log=game_log)
+#             session.commit()

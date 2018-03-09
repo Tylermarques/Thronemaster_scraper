@@ -19,6 +19,7 @@ class Game(Base):
         return f"<Game id={self.id} players={self.players}>"
 
     id = Column(Integer, primary_key=True)  # Game id as given by ThroneMaster
+    game_id = Column(Integer, unique=True)
     second_edition = Column(Boolean, default=True)  # Is game in second edition?
     aborted = Column(Boolean, default=False)  # Was game aborted for any reason?
     start_date = Column(DateTime)
@@ -29,6 +30,8 @@ class Game(Base):
     users = relationship('User_Game', back_populates='game')
 
     def parse(self, session, review=None, log=None):
+        self.game_id = int(re.search(r'(Events of Game )([0-9]+).+', log.find('h4').text).group(2))
+        print(self.game_id)
         if not review and not log:
             raise ValueError("Must provide at least one soup")
         if review:
@@ -136,7 +139,7 @@ class Game(Base):
             user_houses = {}
             for user_game in game.users:
                 user_houses[user_game.house.lower()] = user_game.user
-            return user_houses[house.lower()].id
+            return user_houses.get(house.lower()).id
 
         move_table = soup.find('table', {'style': 'font-size:small'})
         tags = move_table.find_all(lambda _: _.name == 'tr' and len(_.contents) == 13)
@@ -284,6 +287,7 @@ class User_Game(Base):
 
     game = relationship('Game', back_populates='users')
     user = relationship('User', back_populates='games')
+
 
 
 Base.metadata.create_all(engine)
