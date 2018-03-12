@@ -3,11 +3,11 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 import re
 from datetime import datetime
-
 Base = declarative_base()
 
 
 class Game(Base):
+    # TODO add game type (rated, unrated, etc.)
     __tablename__ = 'games'
 
     def __init__(self):
@@ -18,9 +18,10 @@ class Game(Base):
         return f"<Game id={self.id} players={self.players}>"
 
     id = Column(Integer, primary_key=True)  # Game id as given by ThroneMaster
-    game_id = Column(Integer, unique=True)
+    thronemaster_id = Column(Integer, unique=True)
     second_edition = Column(Boolean, default=True)  # Is game in second edition?
     aborted = Column(Boolean, default=False)  # Was game aborted for any reason?
+    game_type = Column(String)
     start_date = Column(DateTime)
     end_date = Column(DateTime)
     end_turn = Column(Integer)
@@ -29,7 +30,8 @@ class Game(Base):
     users = relationship('User_Game', back_populates='game')
 
     def parse(self, session, review=None, log=None):
-        self.game_id = int(re.search(r'(Events of Game )([0-9]+).+', log.find('h4').text).group(2))
+        self.thronemaster_id = int(re.search(r'(Events of Game )([0-9]+).+', log.find('h4').text).group(2))
+        self.game_type = log.find_all('table')[-1].text.strip()
         if not review and not log:
             raise ValueError("Must provide at least one soup")
         if review:
@@ -109,7 +111,6 @@ class Game(Base):
 
         def determine_areas(string):
             # FIXME What if there is a march to multiple locations?
-            # TODO Order locations in order of appearance in string
             areas = ['Port of Winterfell', 'Port of Lannisport', 'Port of Dragonstone', 'Port of White Harbor',
                      'Bay of Ice', 'Sunset Sea', "Ironman's Bay", 'The Golden Sound', 'West Summer Sea',
                      'Redwyne Straights', 'East Summer Sea', 'Sea of Dorne', 'Shipbreaker Bay', 'Blackwater Bay',
@@ -155,7 +156,7 @@ class Game(Base):
                 session.add(move)
                 return self
             # move.house =
-            if not self.start_date or self.start_date < move.date:
+            if not self.start_date:
                 self.start_date = move.date
             # Reasons to skip
             #    Any consolidate power that isn't mustering
@@ -285,7 +286,6 @@ class User_Game(Base):
 
     game = relationship('Game', back_populates='users')
     user = relationship('User', back_populates='games')
-
 
 
 
