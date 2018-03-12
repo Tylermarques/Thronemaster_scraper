@@ -20,13 +20,13 @@ def main(game_id):
     except:
         with open('logs/parse_errors.txt', 'a') as log:
             log.write(game_id + '\n')
+    return
 
 
 def main_threaded():
     pool = ThreadPool(4)
     game_ids = list(set(os.listdir('game_logs/')).union(os.listdir('reviews/')))
-    print(game_ids)
-    # pool.map(main, game_ids)
+    pool.map(main, game_ids)
 
 
 # if __name__ == '__main__':
@@ -46,5 +46,6 @@ def main_threaded():
 
 if __name__ == '__main__':
     game_ids = list(set(os.listdir('game_logs/')).union(os.listdir('reviews/')))
+    game_ids = sorted(game_ids)
     for game in game_ids:
         main(game)

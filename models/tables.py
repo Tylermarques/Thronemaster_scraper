@@ -1,3 +1,10 @@
+"""
+Throne Master Parsing Script - Models
+It's not pretty, but it's mine.
+
+Used to create the database objects used to commit data from logs to postgres.
+"""
+
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
@@ -75,6 +82,7 @@ class Game(Base):
                 return result
 
         session.add(self)
+        # Associate games with users and houses
         for tag in user_tags:
             user_game = User_Game()
             _house = check_attrs_for_house(tag.span.attrs)
@@ -152,8 +160,10 @@ class Game(Base):
             move.log_entry = tds[2].text
             move.date = datetime.strptime(tds[-1].text, '%Y-%b-%d, %H:%M')
             if 'GAME ABORTED' in move.log_entry:
+                self.end_turn = move.turn_number
                 self.aborted = True
                 session.add(move)
+                self.end_date = move.date
                 return self
             # move.house =
             if not self.start_date:
