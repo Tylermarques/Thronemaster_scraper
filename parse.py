@@ -44,7 +44,8 @@ if __name__ == '__main__':
                 game_log = BeautifulSoup(game_log_file, 'html.parser')
                 review = BeautifulSoup(review_file, 'html.parser')
                 game = Game().parse(session, review=review, log=game_log)
-                session.commit()
+                if not game.still_running:
+                    session.commit()
 
     if env == 'prod':
         game_ids = list(set(os.listdir('game_logs/')).union(os.listdir('reviews/')))

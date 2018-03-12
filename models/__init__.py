@@ -1,6 +1,6 @@
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
-from .tables import Game, Base
+from .tables import Game, Base, User
 import sys
 
 env = sys.argv[1] if len(sys.argv) > 2 else 'dev'

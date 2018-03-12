@@ -20,6 +20,7 @@ class Game(Base):
     def __init__(self):
         super().__init__()
         self.players = {}
+        self.still_running = False
 
     def __repr__(self):
         return f"<Game id={self.id} players={self.players}>"
@@ -42,6 +43,7 @@ class Game(Base):
         if not review and not log:
             raise ValueError("Must provide at least one soup")
         if review:
+            # TODO Fix The users table, some names apparead twice when they are too long, as it truncates names with '..'
             self.house_search(review.find_all('a', {'title': 'Go to player\'s profile'}), session)
         if log:
             self.get_moves(log, session)
@@ -86,7 +88,7 @@ class Game(Base):
         for tag in user_tags:
             user_game = User_Game()
             _house = check_attrs_for_house(tag.span.attrs)
-            _user_name = tag.span.text.strip()
+            _user_name = re.search('(?:[a-zA-Z:\/\/\.=&]+)(?:&usr=([\S]+))', tag.attrs['href']).groups(1)
             user = get_user_id(_user_name, session)
             self.players[_house] = user
             user_game.user_id = int(user.id)
@@ -204,6 +206,7 @@ class Game(Base):
                     continue
                 pass
             elif move.phase == 'GAME END':
+                # TODO if no game end tag, don't add game to db
                 # TODO determine username
                 self.winner = determine_winner(self, move.log_entry).id
                 self.end_turn = move.turn_number
@@ -271,8 +274,6 @@ class Move(Base):
                f'  }}\n' \
                f'  Log Entry: {self.log_entry}\n' \
                f'}}'
-
-
 
 
 class User(Base):
