@@ -20,7 +20,7 @@ class Game(Base):
     def __init__(self):
         super().__init__()
         self.players = {}
-        self.still_running = False
+        self.still_running = True
 
     def __repr__(self):
         return f"<Game id={self.id} players={self.players}>"
@@ -211,7 +211,7 @@ class Game(Base):
                 self.winner = determine_winner(self, move.log_entry).id
                 self.end_turn = move.turn_number
                 self.end_date = move.date
-                continue
+                self.still_running = False
 
                 # self.house =
             else:  # What if nothing works?

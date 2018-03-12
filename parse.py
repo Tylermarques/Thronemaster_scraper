@@ -21,14 +21,16 @@ def main(game_id):
     except:
         with open('logs/parse_errors.txt', 'a') as log:
             log.write(game_id + '\n')
-    return
+    if game_id % 100 == 0:
+        print(f'Game id {game_id} finished')
+    return game_id
 
 
 def main_threaded():
     pool = ThreadPool(4)
     game_ids = list(set(os.listdir('game_logs/')).union(os.listdir('reviews/')))
     game_ids = sorted(game_ids)
-    pool.map(main, game_ids)
+    results = pool.map(main, game_ids)
 
 
 if __name__ == '__main__':

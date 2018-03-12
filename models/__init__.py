@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 from .tables import Game, Base, User
 import sys
 
-env = sys.argv[1] if len(sys.argv) > 2 else 'dev'
+env = sys.argv[1] if len(sys.argv) > 1 else 'dev'
 
 if env == 'dev':
     engine = create_engine(f'postgresql://postgres@localhost:5432/game_of_thrones')
