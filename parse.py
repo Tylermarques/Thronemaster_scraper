@@ -32,7 +32,9 @@ def main_threaded():
 
 
 if __name__ == '__main__':
-    env = sys.argv[1] if len(sys.argv) > 2 else 'dev'
+    if len(sys.argv) < 2:
+        raise TypeError("Must specify environment")
+    env = sys.argv[1]
 
     if env == 'dev':
         game_id = 106230
