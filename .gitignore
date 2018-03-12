@@ -118,3 +118,4 @@ venv.bak/
 /error_logs/
 
 /csvs/
+/logs/

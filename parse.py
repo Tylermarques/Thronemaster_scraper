@@ -4,7 +4,6 @@ from multiprocessing.dummy import Pool as ThreadPool
 import os
 import sys
 from functools import partial
-
 # 11932 Errors on last run
 # only 6600 successes
 
@@ -30,11 +29,9 @@ def main(game_id, session):
 
 def main_threaded():
     pool = ThreadPool(4)
-    session = Session()
-    main_function = partial(main, session=session)
     game_ids = list(set(os.listdir('game_logs/')).union(os.listdir('reviews/')))
     game_ids = sorted(game_ids)
-    results = pool.map(main_function, game_ids)
+    results = pool.starmap(main, game_ids)
     return results
 
 
