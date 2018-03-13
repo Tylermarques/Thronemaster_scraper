@@ -15,7 +15,6 @@ Base = declarative_base()
 
 
 class Game(Base):
-    # TODO add game type (rated, unrated, etc.)
     __tablename__ = 'games'
 
     id = Column(Integer, primary_key=True)  # Game id as given by ThroneMaster
@@ -45,7 +44,6 @@ class Game(Base):
         if not review and not log:
             raise ValueError("Must provide at least one soup")
         if review:
-            # TODO Fix The users table, some names apparead twice when they are too long, as it truncates names with '..'
             self._review_parser(review.find_all('a', {'title': 'Go to player\'s profile'}), session)
         if log:
             self._log_parser(log, session)
@@ -143,7 +141,6 @@ class Game(Base):
                 for user_name in user_names.keys():
                     if user_name in string:
                         return user_names[user_name]
-                print(user_names)
                 raise ValueError
 
             def determine_house(string):
@@ -223,7 +220,6 @@ class Game(Base):
                 continue
             elif move.phase == 'GAME END':
                 # TODO if no game end tag, don't add game to db
-                # TODO determine username
                 self.winner = determine_user_id(self, move)
                 self.end_turn = move.turn_number
                 self.end_date = move.date
