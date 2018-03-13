@@ -10,20 +10,13 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 import re
 from datetime import datetime
+
 Base = declarative_base()
 
 
 class Game(Base):
     # TODO add game type (rated, unrated, etc.)
     __tablename__ = 'games'
-
-    def __init__(self):
-        super().__init__()
-        self.players = {}
-        self.still_running = True
-
-    def __repr__(self):
-        return f"<Game id={self.id} players={self.players}>"
 
     id = Column(Integer, primary_key=True)  # Game id as given by ThroneMaster
     thronemaster_id = Column(Integer, unique=True)
@@ -37,20 +30,29 @@ class Game(Base):
     moves = relationship('Move', back_populates='game')
     users = relationship('User_Game', back_populates='game')
 
+    def __init__(self):
+        super().__init__()
+        self.players = {}
+        self.still_running = True
+
+    def __repr__(self):
+        return f"<Game id={self.id} players={self.players}>"
+
     def parse(self, session, review=None, log=None):
+
         self.thronemaster_id = int(re.search(r'(Events of Game )([0-9]+).+', log.find('h4').text).group(2))
         self.game_type = log.find_all('table')[-1].text.strip()
         if not review and not log:
             raise ValueError("Must provide at least one soup")
         if review:
             # TODO Fix The users table, some names apparead twice when they are too long, as it truncates names with '..'
-            self.house_search(review.find_all('a', {'title': 'Go to player\'s profile'}), session)
+            self._review_parser(review.find_all('a', {'title': 'Go to player\'s profile'}), session)
         if log:
-            self.get_moves(log, session)
+            self._log_parser(log, session)
         session.commit()
         return self
 
-    def house_search(self, user_tags, session):
+    def _review_parser(self, user_tags, session):
 
         def check_attrs_for_house(attrs):
             house_name_colours = {
@@ -89,7 +91,8 @@ class Game(Base):
         for tag in user_tags:
             user_game = User_Game()
             _house = check_attrs_for_house(tag.span.attrs)
-            _user_name = re.search('(?:[a-zA-Z:\/\/\.=&]+)(?:&usr=([\S]+))', tag.attrs['href']).groups(1)
+            _user_name = re.search('(?:[a-zA-Z:\/\/\.=&]+)(?:&usr=([\S]+))', tag.attrs['href']).groups(1)[0].replace(
+                '%20', ' ').strip()
             user = get_user_id(_user_name, session)
             self.players[_house] = user
             user_game.user_id = int(user.id)
@@ -97,28 +100,7 @@ class Game(Base):
             user_game.house = _house
             session.add(user_game)
 
-    def get_moves(self, soup, session):
-
-        def determine_winner(game, string):
-            user_names = {}
-            for user_game in game.users:
-                user_names[user_game.user.username] = user_game.user
-            for user_name in user_names.keys():
-                if user_name in string:
-                    return user_names[user_name]
-            raise ValueError
-
-        def determine_house(string):
-            houses = ['Lannister', 'Tyrell', 'Stark', 'Greyjoy', 'Martell', 'Baratheon']
-            if string:
-                string_houses = []
-                for house in houses:
-                    if house in string:
-                        string_houses.append(house)
-                house_dict = {string_houses.index(house): house for house in string_houses}
-                if not house_dict:
-                    return None
-                return house_dict[min(house_dict.keys())]
+    def _log_parser(self, soup, session):
 
         def determine_areas(string):
             # FIXME What if there is a march to multiple locations?
@@ -143,13 +125,47 @@ class Game(Base):
                 if unit in string:
                     return int(re.search('([0-9])', string).group(0)), unit.lower()
 
-        def house_to_user_id(game, house):
-            if not house:
-                return
-            user_houses = {}
-            for user_game in game.users:
-                user_houses[user_game.house.lower()] = user_game.user
-            return user_houses.get(house.lower()).id
+        def determine_user_id(game, move):
+            """
+            Args:
+                game (Game):
+                move (Move):
+                house (str):
+
+            Returns:
+                int: User ID
+            """
+
+            def determine_winner(game, string):
+                user_names = {}
+                for user_game in game.users:
+                    user_names[user_game.user.username] = user_game.user
+                for user_name in user_names.keys():
+                    if user_name in string:
+                        return user_names[user_name]
+                print(user_names)
+                raise ValueError
+
+            def determine_house(string):
+                houses = ['Lannister', 'Tyrell', 'Stark', 'Greyjoy', 'Martell', 'Baratheon']
+                if string:
+                    string_houses = []
+                    for _house in houses:
+                        if _house in string:
+                            string_houses.append(_house)
+                    house_dict = {string_houses.index(house): house for house in string_houses}
+                    if not house_dict:
+                        return None
+                    return house_dict[min(house_dict.keys())]
+
+            house = determine_house(move.log_entry)
+            if house:
+                user_houses = {}
+                for user_game in game.users:
+                    user_houses[user_game.house.lower()] = user_game.user
+                return user_houses.get(house.lower()).id
+            else:
+                return determine_winner(game, move.log_entry).id
 
         move_table = soup.find('table', {'style': 'font-size:small'})
         tags = move_table.find_all(lambda _: _.name == 'tr' and len(_.contents) == 13)
@@ -202,14 +218,13 @@ class Game(Base):
                 setattr(move, units[1], units[0])
 
             elif move.phase == 'WESTEROS':
-                continue
                 if 'The holder of the Iron Throne chose the following event:' in move.log_entry:
                     continue
-                pass
+                continue
             elif move.phase == 'GAME END':
                 # TODO if no game end tag, don't add game to db
                 # TODO determine username
-                self.winner = determine_winner(self, move.log_entry).id
+                self.winner = determine_user_id(self, move)
                 self.end_turn = move.turn_number
                 self.end_date = move.date
                 self.still_running = False
@@ -217,7 +232,7 @@ class Game(Base):
                 # self.house =
             else:  # What if nothing works?
                 continue
-            move.user_id = house_to_user_id(self, determine_house(move.log_entry))
+            move.user_id = determine_user_id(self, move)
             # print(move.describe())
             if not move.user_id:
                 raise ValueError('wtf guys')
@@ -298,6 +313,3 @@ class User_Game(Base):
 
     game = relationship('Game', back_populates='users')
     user = relationship('User', back_populates='games')
-
-
-

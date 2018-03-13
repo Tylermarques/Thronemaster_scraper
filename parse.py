@@ -6,7 +6,9 @@ import sys
 # 11932 Errors on last run
 # only 6600 successes
 
+print('Creating database objects ... ', end='')
 Base.metadata.create_all(engine)
+print('finished')
 
 
 # def main(game_id):
@@ -51,21 +53,33 @@ def main_threaded():
 
 
 if __name__ == '__main__':
+    print('Reading env variables ... ', end='')
     if len(sys.argv) < 2:
         raise TypeError("Must specify environment")
     env = sys.argv[1]
+    print('finished')
 
     if env == 'dev':
+        print('Opening log files ... ', end='')
         game_id = 106230
         with open(f'game_logs/{game_id}') as game_log_file:
             with open(f'reviews/{game_id}') as review_file:
+                print('finished')
+                print('Creating session ... ', end='')
                 session = Session()
+                print('finished')
+                print('Souping files ... ', end='')
                 game_log = BeautifulSoup(game_log_file, 'html.parser')
                 review = BeautifulSoup(review_file, 'html.parser')
-                game = Game().parse(session, review=review, log=game_log)
-                if not game.still_running:
-                    session.commit()
+                print('finished')
 
+                print('Beginning parsing ... ', end='')
+                game = Game().parse(session, review=review, log=game_log)
+                print('finished')
+                if not game.still_running:
+                    print('Commiting session ... ', end='')
+                    session.commit()
+                    print('finished')
     if env == 'prod':
         game_ids = list(set(os.listdir('game_logs/')).union(os.listdir('reviews/')))
         game_ids = sorted(game_ids)
