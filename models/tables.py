@@ -47,6 +47,7 @@ class Game(Base):
             self.house_search(review.find_all('a', {'title': 'Go to player\'s profile'}), session)
         if log:
             self.get_moves(log, session)
+        session.commit()
         return self
 
     def house_search(self, user_tags, session):

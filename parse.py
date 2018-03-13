@@ -9,23 +9,37 @@ import sys
 Base.metadata.create_all(engine)
 
 
-def main(game_id):
+# def main(game_id):
+#
+#     try:
+#         with open(f'game_logs/{game_id}') as game_log_file:
+#             with open(f'reviews/{game_id}') as review_file:
+#                 session = Session()
+#                 game_log = BeautifulSoup(game_log_file, 'html.parser')
+#                 review = BeautifulSoup(review_file, 'html.parser')
+#                 game = Game().parse(session, review=review, log=game_log)
+#                 if not game.still_running:
+#                     session.commit()
+#     except:
+#         with open('logs/parse_errors.txt', 'a') as log:
+#             log.write(game_id + '\n')
+#     if int(game_id) % 100 == 0:
+#         print(f'Game id {game_id} finished')
+#     return game_id
 
+def main(game_id):
     try:
         with open(f'game_logs/{game_id}') as game_log_file:
             with open(f'reviews/{game_id}') as review_file:
                 session = Session()
                 game_log = BeautifulSoup(game_log_file, 'html.parser')
                 review = BeautifulSoup(review_file, 'html.parser')
-                game = Game().parse(session, review=review, log=game_log)
-                if not game.still_running:
-                    session.commit()
+                Game().parse(session, review=review, log=game_log)
+
     except:
         with open('logs/parse_errors.txt', 'a') as log:
             log.write(game_id + '\n')
-    if int(game_id) % 100 == 0:
-        print(f'Game id {game_id} finished')
-    return game_id
+    return
 
 
 def main_threaded():
