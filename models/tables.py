@@ -62,7 +62,8 @@ class Game(Base):
                           'left: 30px; top: 1295px;': 'The Arbor',
                           'left: 131px; top: 1068px;': 'Highgarden', 'left: 590px; top: 1220px;': 'Sunspear',
                           'left: 395px; top: 1310px;': 'Salt Shore',
-                          'left: 225px; top: 1135px;': 'Dornish Marches', 'left: 125px; top: 1245px;': 'Three Towers',
+                          'left: 225px; top: 1135px;': 'Dornish Marches',
+                          'left: 295px; top: 1115px;': 'Dornish Marches', 'left: 125px; top: 1245px;': 'Three Towers',
                           'left: 75px; top: 1195px;': 'Oldtown', 'left: 435px; top: 1115px;': 'Storms End',
                           'left: 220px; top: 1300px;': 'Starfall', 'left: 76px; top: 1087px;': 'Port of Oldtown',
                           'left: 143px; top: 648px;': 'Pyke', 'left: 19px; top: 745px;': 'Port of Pyke'}
