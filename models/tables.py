@@ -280,7 +280,7 @@ class Game(Base):
                     pass
                 else:
                     units = determine_units(move.log_entry)
-
+                if units:
                     setattr(move, units[1], units[0])
 
             elif move.phase == 'WESTEROS':
