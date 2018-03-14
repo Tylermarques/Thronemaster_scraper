@@ -141,7 +141,7 @@ class Game(Base):
                 for user_name in user_names.keys():
                     if user_name in string:
                         return user_names[user_name]
-                raise ValueError
+                return None
 
             def determine_house(string):
                 houses = ['Lannister', 'Tyrell', 'Stark', 'Greyjoy', 'Martell', 'Baratheon']
@@ -163,6 +163,7 @@ class Game(Base):
                 return user_houses.get(house.lower()).id
             else:
                 return determine_winner(game, move.log_entry).id
+
 
         move_table = soup.find('table', {'style': 'font-size:small'})
         tags = move_table.find_all(lambda _: _.name == 'tr' and len(_.contents) == 13)
@@ -233,8 +234,8 @@ class Game(Base):
                 pass
 
             # print(move.describe())
-            if not move.user_id:
-                raise ValueError('No user id in Move')
+            # if not move.user_id:
+            #     raise ValueError('No user id in Move')
             if not move.game_id:
                 raise ValueError('No game id in Move')
             if not move.phase:
