@@ -175,6 +175,7 @@ class Game(Base):
             move.phase = ths[1].text
             move.log_entry = tds[2].text
             move.date = datetime.strptime(tds[-1].text, '%Y-%b-%d, %H:%M')
+            move.user_id = determine_user_id(self, move)
             if 'GAME ABORTED' in move.log_entry:
                 self.end_turn = move.turn_number
                 self.aborted = True
@@ -202,22 +203,24 @@ class Game(Base):
                     setattr(move, units[1], units[0])
 
             elif move.phase == 'BATTLE':
-                continue
+                pass
             elif move.phase == 'RAID':
-                continue
+                pass
             elif move.phase == 'RAVEN':
                 if not move.user_id:
-                    continue
+                    pass
+                pass
             elif move.phase == 'POWER':
                 if "consolidate" in move.log_entry.lower():
-                    continue
-                units = determine_units(move.log_entry)
-                setattr(move, units[1], units[0])
+                    pass
+                else:
+                    units = determine_units(move.log_entry)
+                    setattr(move, units[1], units[0])
 
             elif move.phase == 'WESTEROS':
                 if 'The holder of the Iron Throne chose the following event:' in move.log_entry:
-                    continue
-                continue
+                    pass
+                pass
             elif move.phase == 'GAME END':
                 # TODO if no game end tag, don't add game to db
                 self.winner = determine_user_id(self, move)
@@ -227,11 +230,15 @@ class Game(Base):
 
                 # self.house =
             else:  # What if nothing works?
-                continue
-            move.user_id = determine_user_id(self, move)
+                pass
+
             # print(move.describe())
             if not move.user_id:
-                raise ValueError('wtf guys')
+                raise ValueError('No user id in Move')
+            if not move.game_id:
+                raise ValueError('No game id in Move')
+            if not move.phase:
+                raise ValueError('No phase in move')
             session.add(move)
 
             # print(f'Turn Number: {move.turn_number}\nPhase: {move.phase}\nHouse={determine_house(move.log_entry)}')
