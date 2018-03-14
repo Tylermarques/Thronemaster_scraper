@@ -40,8 +40,8 @@ class Game(Base):
                           'left: 55px; top: 200px;': 'Bay of Ice', 'left: 2px; top: 543px;': 'Sunset Sea',
                           'left: 12px; top: 625px;': "Ironman's Bay", 'left: 20px; top: 830px;': 'The Golden Sound',
                           'left: 180px; top: 1335px;': 'West Summer Sea',
-                          'left: 165px; top: 1340px;': 'West Summer Sea',
                           'left: 25px; top: 1150px;': 'Redwyne Straights',
+                          'left: 670px; top: 1095px;': 'East Summer Sea',
                           'left: 490px; top: 1355px;': 'East Summer Sea', 'left: 550px; top: 1180px;': 'Sea of Dorne',
                           'left: 670px; top: 1020px;': 'Shipbreaker Bay', 'left: 527px; top: 848px;': 'Blackwater Bay',
                           'left: 655px; top: 590px;': 'The Narrow Sea', 'left: 655px; top: 295px;': 'The Shivering Sea',
@@ -67,7 +67,7 @@ class Game(Base):
                           'left: 295px; top: 1115px;': 'Dornish Marches', 'left: 125px; top: 1245px;': 'Three Towers',
                           'left: 75px; top: 1195px;': 'Oldtown', 'left: 435px; top: 1115px;': 'Storms End',
                           'left: 220px; top: 1300px;': 'Starfall', 'left: 76px; top: 1087px;': 'Port of Oldtown',
-                          'left: 143px; top: 648px;': 'Pyke', 'left: 19px; top: 745px;': 'Port of Pyke'}
+                          'left: 143px; top: 648px;': 'Pyke'}
 
     def __repr__(self):
         return f"<Game id={self.id} players={self.players}>"
@@ -156,7 +156,7 @@ class Game(Base):
             except KeyError as e:
                 print('\n ****** KEYERROR *****')
                 print(e)
-                print('*'*8 +'\n')
+                print('*' * 8 + '\n')
             try:
                 session.add(order)
             except:
@@ -260,8 +260,11 @@ class Game(Base):
                     if areas:
                         move.start_location = areas[0]
                         move.end_location = areas[-1]
-                if units:
-                    setattr(move, units[1], units[0])
+                if units and move:
+                    try:
+                        setattr(move, units[1], units[0])
+                    except:
+                        print('\n ***********\nSomething wrong with the units thing \n**********')
 
             elif move.phase == 'BATTLE':
                 pass
