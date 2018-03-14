@@ -30,16 +30,16 @@ print('finished')
 #     return game_id
 
 def main(game_id):
-    with open(f'game_logs/{game_id}') as game_log_file:
-        with open(f'reviews/{game_id}') as review_file:
-            session = Session()
-            game_log = BeautifulSoup(game_log_file, 'html.parser')
-            review = BeautifulSoup(review_file, 'html.parser')
-            Game().parse(session, review=review, log=game_log)
-
-    # except:
-    #     with open('logs/parse_errors.txt', 'a') as log:
-    #         log.write(game_id + '\n')
+    try:
+        with open(f'game_logs/{game_id}') as game_log_file:
+            with open(f'reviews/{game_id}') as review_file:
+                session = Session()
+                game_log = BeautifulSoup(game_log_file, 'html.parser')
+                review = BeautifulSoup(review_file, 'html.parser')
+                Game().parse(session, review=review, log=game_log)
+    except FileNotFoundError:
+        with open('logs/parse_errors.txt', 'a') as log:
+            log.write(game_id + '\n')
     return
 
 

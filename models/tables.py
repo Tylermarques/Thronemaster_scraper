@@ -162,7 +162,10 @@ class Game(Base):
                     user_houses[user_game.house.lower()] = user_game.user
                 return user_houses.get(house.lower()).id
             else:
-                return determine_winner(game, move.log_entry).id
+                user = determine_winner(game, move.log_entry)
+                if user:
+                    return user.id
+                return None
 
 
         move_table = soup.find('table', {'style': 'font-size:small'})
