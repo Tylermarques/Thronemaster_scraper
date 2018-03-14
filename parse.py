@@ -77,8 +77,6 @@ if __name__ == '__main__':
         max_game_id = session.query(func.max(Game.thronemaster_id)).first()[0]
 
         for game in game_ids:
-            if session.query(Game).filter(Game.id == int(game)).first():
-                continue
             if max_game_id is not None:
                 if not isinstance(max_game_id, int):
                     max_game_id = max_game_id.first()[0]
