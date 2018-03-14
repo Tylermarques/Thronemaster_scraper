@@ -3,6 +3,8 @@ from models import Game, Session, Base, engine
 from multiprocessing.dummy import Pool as ThreadPool
 import os
 import sys
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy import func
 # 11932 Errors on last run
 # only 6600 successes
 
@@ -29,11 +31,10 @@ print('finished')
 #         print(f'Game id {game_id} finished')
 #     return game_id
 
-def main(game_id):
+def main(game_id, session):
     try:
         with open(f'game_logs/{game_id}') as game_log_file:
             with open(f'reviews/{game_id}') as review_file:
-                session = Session()
                 game_log = BeautifulSoup(game_log_file, 'html.parser')
                 review = BeautifulSoup(review_file, 'html.parser')
                 Game().parse(session, review=review, log=game_log)
@@ -79,11 +80,31 @@ if __name__ == '__main__':
                     print('Commiting session ... ', end='')
                     session.commit()
                     print('finished')
+    if env == 'dev2':
+        game = 100000
+        session = Session()
+        try:
+            main(game, session)
+        except IntegrityError:
+            print('\n****************ERROR EXCEPTED******************\n')
+            max_game_id = session.query(func.max(Game.id))
+            print(max_game_id.first())
+
     if env == 'prod':
-        game_ids = list(set(os.listdir('game_logs/')).union(os.listdir('reviews/')))
-        game_ids = sorted(game_ids)
-        for game in game_ids:
-            main(game)
+            session = Session()
+            game_ids = list(set(os.listdir('game_logs/')).union(os.listdir('reviews/')))
+            game_ids = sorted(game_ids)
+            max_game_id = session.query(func.max(Game.id)).first()
+            print(max_game_id)
+            for game in game_ids:
+                if game < max_game_id:
+                    continue
+                try:
+                    main(game, session)
+                except IntegrityError:
+                    max_game_id = session.query(func.max(Game.id))
+
+
 
     if env == 'prod_threaded':
         main_threaded()
