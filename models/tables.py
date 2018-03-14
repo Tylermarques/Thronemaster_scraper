@@ -33,6 +33,39 @@ class Game(Base):
         super().__init__()
         self.players = {}
         self.still_running = True
+        self.locations = {'left: 225px; top: 205px;': 'Port of Winterfell',
+                          'left: 50px; top: 895px;': 'Port of Lannisport',
+                          'left: 652px; top: 930px;': 'Port of Dragonstone',
+                          'left: 440px; top: 526px;': 'Port of White Harbor',
+                          'left: 55px; top: 200px;': 'Bay of Ice', 'left: 2px; top: 543px;': 'Sunset Sea',
+                          'left: 12px; top: 625px;': "Ironman's Bay", 'left: 20px; top: 830px;': 'The Golden Sound',
+                          'left: 180px; top: 1335px;': 'West Summer Sea',
+                          'left: 25px; top: 1150px;': 'Redwyne Straights',
+                          'left: 490px; top: 1355px;': 'East Summer Sea', 'left: 550px; top: 1180px;': 'Sea of Dorne',
+                          'left: 670px; top: 1020px;': 'Shipbreaker Bay', 'left: 527px; top: 848px;': 'Blackwater Bay',
+                          'left: 655px; top: 590px;': 'The Narrow Sea', 'left: 655px; top: 295px;': 'The Shivering Sea',
+                          'left: 355px; top: 91px;': 'Castle Black', 'left: 400px; top: 245px;': 'Winterfell',
+                          'left: 536px; top: 262px;': 'Karhold',
+                          'left: 165px; top: 315px;': 'The Stony Shore', 'left: 447px; top: 365px;': 'White Harbor',
+                          "left: 490px; top: 435px;": "Widow's Watch", 'left: 345px; top: 470px;': 'Moat Cailin',
+                          'left: 162px; top: 488px;': 'Greywater Watch', "left: 58px; top: 533px;": "Flint's Finger",
+                          'left: 320px; top: 575px;': 'The Twins',
+                          'left: 204px; top: 628px;': 'Seagard', 'left: 520px; top: 575px;': 'The Fingers',
+                          'left: 550px; top: 640px;': 'The Mountains of the Moon',
+                          'left: 260px; top: 695px;': 'Riverrun',
+                          'left: 538px; top: 722px;': 'The Eyrie', 'left: 160px; top: 766px;': 'Lannisport',
+                          'left: 375px; top: 795px;': 'Harrenhal',
+                          'left: 219px; top: 903px;': 'Stoney Sept', 'left: 540px; top: 795px;': 'Crackclaw Point',
+                          'left: 593px; top: 860px;': 'Dragonstone', 'left: 221px; top: 958px;': 'Blackwater',
+                          "left: 450px; top: 890px;": "King's Landing", 'left: 105px; top: 955px;': 'Searoad Marches',
+                          'left: 531px; top: 960px;': 'Kingswood', 'left: 275px; top: 990px;': 'The Reach',
+                          'left: 30px; top: 1295px;': 'The Arbor',
+                          'left: 131px; top: 1068px;': 'Highgarden', 'left: 590px; top: 1220px;': 'Sunspear',
+                          'left: 395px; top: 1310px;': 'Salt Shore',
+                          'left: 295px; top: 1115px;': 'Dornish Marches', 'left: 125px; top: 1245px;': 'Three Towers',
+                          'left: 75px; top: 1195px;': 'Oldtown', 'left: 435px; top: 1115px;': 'Storms End',
+                          'left: 220px; top: 1300px;': 'Starfall', 'left: 76px; top: 1087px;': 'Port of Oldtown',
+                          'left: 652px; top: 930px;': 'Pyke'}
 
     def __repr__(self):
         return f"<Game id={self.id} players={self.players}>"
@@ -86,7 +119,6 @@ class Game(Base):
                     result = session.query(User).filter(User.username == user_name).first()
                     return result
 
-
             # Associate games with users and houses
             for tag in user_tags:
                 user_game = User_Game()
@@ -117,28 +149,17 @@ class Game(Base):
             order.user_id = user.id
             order.game_id = self.id
             order.order = tag.attrs['class'][1]
-            order.area = '??'
+            order.area = self.locations[str(tag.attrs['style'][0]) + str(tag.attrs['style'][1])]
             try:
                 session.add(order)
             except:
                 session.rollback()
 
-
-
-
-
     def _log_parser(self, soup, session):
 
-        def determine_areas(string):
+        def determine_areas(game, string):
             # FIXME What if there is a march to multiple locations?
-            areas = ['Port of Winterfell', 'Port of Lannisport', 'Port of Dragonstone', 'Port of White Harbor',
-                     'Bay of Ice', 'Sunset Sea', "Ironman's Bay", 'The Golden Sound', 'West Summer Sea',
-                     'Redwyne Straights', 'East Summer Sea', 'Sea of Dorne', 'Shipbreaker Bay', 'Blackwater Bay',
-                     'The Narrow Sea', 'The Shivering Sea', 'Castle Black', 'Winterfell', 'Karhold', 'The Stony Shore',
-                     'White Harbor', "Widow's Watch", 'Moat Cailin', 'Greywater Watch', "Flint's Finger", 'The Twins',
-                     'Seagard', 'The Fingers', 'The Mountains of the Moon', 'Riverrun', 'The Eyrie', 'Lannisport',
-                     'Harrenhal', 'Stoney Sept', 'Crackclaw Point', 'Dragonstone', 'Blackwater', "King's Landing",
-                     'Searoad Marches', 'Kingswood', 'The Reach', 'The Arbor']
+            areas = list(game.locations.values())
             move_areas = []
             for area in areas:
                 if area in string:
@@ -196,7 +217,6 @@ class Game(Base):
                     return user.id
                 return None
 
-
         move_table = soup.find('table', {'style': 'font-size:small'})
         tags = move_table.find_all(lambda _: _.name == 'tr' and len(_.contents) == 13)
         for tag in tags[1:]:
@@ -228,7 +248,7 @@ class Game(Base):
                 if 'Battle!' in move.log_entry:
                     pass
                 else:
-                    areas = determine_areas(move.log_entry)
+                    areas = determine_areas(self, move.log_entry)
                     units = determine_units(move.log_entry)
                     if areas:
                         move.start_location = areas[0]
@@ -249,6 +269,7 @@ class Game(Base):
                     pass
                 else:
                     units = determine_units(move.log_entry)
+
                     setattr(move, units[1], units[0])
 
             elif move.phase == 'WESTEROS':
@@ -350,7 +371,6 @@ class User_Game(Base):
 
     game = relationship('Game', back_populates='users')
     user = relationship('User', back_populates='games')
-
 
 
 class StartingOrder(Base):
