@@ -68,7 +68,7 @@ class Game(Base):
                                                and tag.get('style') != "left: -1250px; top: 0px;")
         game = get_game_obj(self.thronemaster_id, session)
         for tag in order_tags:
-            user = get_user_obj(game.id, tag.attrs['title'].split()[-1])
+            user = get_user_obj(game.id, tag.attrs['title'].split()[-1], session)
             order.user_id = user.id
             order.game_id = game.id
             order.order = tag.attrs['class'][1]
