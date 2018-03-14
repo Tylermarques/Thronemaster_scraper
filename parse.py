@@ -25,6 +25,7 @@ def main(game_id, session):
     return
 
 
+
 def main_threaded():
     pool = ThreadPool(4)
     game_ids = list(set(os.listdir('game_logs/')).union(os.listdir('reviews/')))
