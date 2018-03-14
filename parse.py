@@ -77,11 +77,17 @@ if __name__ == '__main__':
         max_game_id = session.query(func.max(Game.thronemaster_id)).first()[0]
 
         for game in game_ids:
+            print(game)
             if max_game_id is not None:
                 if not isinstance(max_game_id, int):
                     max_game_id = max_game_id.first()[0]
                 if int(game) <= max_game_id:
                     continue
+                else:
+                    try:
+                        main(game, session)
+                    except IntegrityError:
+                        max_game_id = session.query(func.max(Game.id))
             else:
                 try:
                     main(game, session)
