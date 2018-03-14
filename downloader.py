@@ -10,9 +10,9 @@ def downloader(game_log_id):
     chrome_options = Options()
     chrome_options.add_argument('--headless')
     url = f'http://game.thronemaster.net/?game={game_log_id}&review=1'
-    browser = webdriver.Chrome(chrome_options=chrome_options)
-    file_name = 'start_moves/' + str(url[url.find('game=') + 5:].split('&')[0])
     try:
+        browser = webdriver.Chrome(chrome_options=chrome_options)
+        file_name = 'start_moves/' + str(url[url.find('game=') + 5:].split('&')[0])
         browser.get(url)
         innerHTML = browser.execute_script("return document.body.innerHTML")
         with open(file_name, 'wb') as file:
@@ -36,5 +36,5 @@ def downloader(game_log_id):
 
 if __name__ == '__main__':
     pool = ThreadPool(4)
-    game_ids = range(83450, 140000)
+    game_ids = range(101589, 140000)
     results = pool.map(downloader, game_ids)

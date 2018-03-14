@@ -38,7 +38,7 @@ def main(game_id, session):
                 game_log = BeautifulSoup(game_log_file, 'html.parser')
                 review = BeautifulSoup(review_file, 'html.parser')
                 Game().parse(session, review=review, log=game_log)
-    except FileNotFoundError:
+    except Exception as e:
         with open('logs/parse_errors.txt', 'a') as log:
             log.write(game_id + '\n')
     return
