@@ -44,14 +44,64 @@ class Game(Base):
         if not review and not log:
             raise ValueError("Must provide at least one soup")
         if review:
-            self._old_review_parser(review.find_all('a', {'title': 'Go to player\'s profile'}), session)
             self.parse_review(review, session)
         if log:
             self._log_parser(log, session)
-        session.commit()
         return self
 
     def parse_review(self, soup, session):
+        def _old_review_parser(game, user_tags, session):
+
+            def check_attrs_for_house(attrs):
+                house_name_colours = {
+                    'color-B': 'Baratheon',
+                    'color-L': 'Lannister',
+                    'color-M': 'Martell',
+                    'color-G': 'Greyjoy',
+                    'color-S': 'Stark',
+                    'color-T': 'Tyrell'
+                }
+
+                for key, value in attrs.items():
+                    if key == 'class':
+                        if isinstance(attrs[key], list):
+                            for i in value:
+                                if 'color' in i:
+                                    return house_name_colours[i]
+                        else:
+                            if 'color' in value:
+                                return house_name_colours[attrs[key]]
+                return None
+
+            def get_user_id(user_name, session):
+                user = User()
+                result = session.query(User).filter(User.username == user_name).first()
+                if result:
+                    return result
+                else:
+                    user.username = user_name
+                    session.add(user)
+                    result = session.query(User).filter(User.username == user_name).first()
+                    return result
+
+            session.add(game)
+            # Associate games with users and houses
+            for tag in user_tags:
+                user_game = User_Game()
+                _house = check_attrs_for_house(tag.span.attrs)
+                _user_name = re.search('(?:[a-zA-Z:\/\/\.=&]+)(?:&usr=([\S]+))', tag.attrs['href']).groups(1)[
+                    0].replace(
+                    '%20', ' ').strip()
+                user = get_user_id(_user_name, session)
+                self.players[_house] = user
+                user_game.user_id = int(user.id)
+                user_game.game_id = self.id
+                user_game.house = _house
+                session.add(user_game)
+            return session
+
+        _old_review_parser(self, soup.find_all('a', {'title': 'Go to player\'s profile'}), session)
+
         def get_user_obj(game, house):
             _dict = {x.house: x for x in game.users}
             return _dict[house]
@@ -70,53 +120,7 @@ class Game(Base):
 
         session.add(order)
 
-    def _old_review_parser(self, user_tags, session):
 
-        def check_attrs_for_house(attrs):
-            house_name_colours = {
-                'color-B': 'Baratheon',
-                'color-L': 'Lannister',
-                'color-M': 'Martell',
-                'color-G': 'Greyjoy',
-                'color-S': 'Stark',
-                'color-T': 'Tyrell'
-            }
-
-            for key, value in attrs.items():
-                if key == 'class':
-                    if isinstance(attrs[key], list):
-                        for i in value:
-                            if 'color' in i:
-                                return house_name_colours[i]
-                    else:
-                        if 'color' in value:
-                            return house_name_colours[attrs[key]]
-            return None
-
-        def get_user_id(user_name, session):
-            user = User()
-            result = session.query(User).filter(User.username == user_name).first()
-            if result:
-                return result
-            else:
-                user.username = user_name
-                session.add(user)
-                result = session.query(User).filter(User.username == user_name).first()
-                return result
-
-        session.add(self)
-        # Associate games with users and houses
-        for tag in user_tags:
-            user_game = User_Game()
-            _house = check_attrs_for_house(tag.span.attrs)
-            _user_name = re.search('(?:[a-zA-Z:\/\/\.=&]+)(?:&usr=([\S]+))', tag.attrs['href']).groups(1)[0].replace(
-                '%20', ' ').strip()
-            user = get_user_id(_user_name, session)
-            self.players[_house] = user
-            user_game.user_id = int(user.id)
-            user_game.game_id = self.id
-            user_game.house = _house
-            session.add(user_game)
 
     def _log_parser(self, soup, session):
 

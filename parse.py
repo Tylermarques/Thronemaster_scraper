@@ -106,6 +106,8 @@ if __name__ == '__main__':
                     main(game, session)
                 except IntegrityError:
                     max_game_id = session.query(func.max(Game.id))
+            session.commit()
+
 
 
     if env == 'prod_threaded':

@@ -40,7 +40,6 @@ def parse_review(game_id, session):
             order.user_id = user.id
             order.game_id = game.id
             order.order = tag.attrs['class'][1]
-            order.area =
 
 
 
