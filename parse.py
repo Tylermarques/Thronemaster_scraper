@@ -22,6 +22,7 @@ def main(game_id, session):
                 review = BeautifulSoup(review_file, 'html.parser')
                 Game().parse(session, review=review, log=game_log)
     except Exception as e:
+        print(e)
         with open('logs/parse_errors.txt', 'a') as log:
             log.write(str(game_id) + '\n')
     return
@@ -94,6 +95,7 @@ if __name__ == '__main__':
             else:
                 try:
                     main(game, session)
+                    session.commit()
                 except IntegrityError:
                     print(f'INTEGRITY ERROR ON GAME WITH ID {game}')
-            session.commit()
+                    session.rollback()
