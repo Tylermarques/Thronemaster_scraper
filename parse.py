@@ -5,12 +5,14 @@ import os
 import sys
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import func
+
 # 11932 Errors on last run
 # only 6600 successes
 
 print('Creating database objects ... ', end='')
 Base.metadata.create_all(engine)
 print('finished')
+
 
 def main(game_id, session):
     try:
@@ -23,7 +25,6 @@ def main(game_id, session):
         with open('logs/parse_errors.txt', 'a') as log:
             log.write(str(game_id) + '\n')
     return
-
 
 
 def main_threaded():
@@ -75,28 +76,24 @@ if __name__ == '__main__':
     if env == 'prod':
         session = Session()
         game_ids = range(80000, 140000)
-        max_game_id = session.query(func.max(Game.thronemaster_id)).first()[0]
-
         for game in game_ids:
             print(game)
-            if max_game_id is not None:
-                if not isinstance(max_game_id, int):
-                    max_game_id = max_game_id.first()[0]
-                if int(game) <= max_game_id:
-                    continue
-                else:
-                    try:
-                        main(game, session)
-                    except IntegrityError:
-                        max_game_id = session.query(func.max(Game.id))
+            test_query = session.query(Game).filter(Game.id == int(game)).first()
+            if test_query:
+                print(f'Game {game} exists, SKIPPING')
+            # if max_game_id is not None:
+            #     if not isinstance(max_game_id, int):
+            #         max_game_id = max_game_id.first()[0]
+            #     if int(game) <= max_game_id:
+            #         continue
+            #     else:
+            #         try:
+            #             main(game, session)
+            #         except IntegrityError:
+            #             max_game_id = session.query(func.max(Game.id))
             else:
                 try:
                     main(game, session)
                 except IntegrityError:
-                    max_game_id = session.query(func.max(Game.id))
+                    print(f'INTEGRITY ERROR ON GAME WITH ID {game}')
             session.commit()
-
-
-
-    if env == 'prod_threaded':
-        main_threaded()
