@@ -45,7 +45,7 @@ class Game(Base):
         if not review and not log:
             raise ValueError("Must provide at least one soup")
         if review:
-            order = self.parse_review(review, session)
+            self.parse_review(review, session)
         if log:
             self._log_parser(log, session)
         session.add(self)
@@ -95,6 +95,7 @@ class Game(Base):
                     0].replace(
                     '%20', ' ').strip()
                 user = get_user_id(_user_name, session)
+                session.add(user)
                 game.players[_house] = user
                 user_game.user_id = int(user.id)
                 user_game.game_id = game.id
@@ -117,7 +118,10 @@ class Game(Base):
             order.game_id = self.id
             order.order = tag.attrs['class'][1]
             order.area = '??'
-            session.add(order)
+            try:
+                session.add(order)
+            except:
+                session.rollback()
 
 
 
