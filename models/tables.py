@@ -66,7 +66,6 @@ class Game(Base):
                           'left: 75px; top: 1195px;': 'Oldtown', 'left: 435px; top: 1115px;': 'Storms End',
                           'left: 220px; top: 1300px;': 'Starfall', 'left: 76px; top: 1087px;': 'Port of Oldtown',
                           'left: 143px; top: 648px;': 'Pyke', 'left: 19px; top: 745px;': 'Port of Pyke'}
-'left: 225px; top: 1135px;'
     def __repr__(self):
         return f"<Game id={self.id} players={self.players}>"
 
