@@ -20,7 +20,8 @@ def downloader(game_log_id):
             file.close()
         browser.close()
     except Exception as e:
-        print('FAILED')
+        if game_log_id % 100 == 0:
+            print('FAILED')
         browser.close()
         try:
             file.close()
@@ -28,7 +29,8 @@ def downloader(game_log_id):
             pass
         print(e)
     time.sleep(0.33)
-    print('finished')
+    if game_log_id % 100 == 0:
+        print('finished')
     return
 
 
