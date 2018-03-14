@@ -45,7 +45,7 @@ class Game(Base):
         if not review and not log:
             raise ValueError("Must provide at least one soup")
         if review:
-            self.parse_review(review, session)
+            order = self.parse_review(review, session)
         if log:
             self._log_parser(log, session)
         session.add(self)
@@ -101,26 +101,25 @@ class Game(Base):
                 user_game.house = _house
                 session.add(user_game)
 
-
         _old_review_parser(self, soup.find_all('a', {'title': 'Go to player\'s profile'}), session)
 
         def get_user_obj(game, house):
             _dict = {x.house: x for x in game.users}
             return _dict[house]
 
-        order = StartingOrder()
-
         order_tags = soup.find_all(lambda tag: tag.name == 'div'
                                                and 'Order Token' in str(tag.get('title'))
                                                and tag.get('style') != "left: -1250px; top: 0px;")
         for tag in order_tags:
+            order = StartingOrder()
             user = get_user_obj(self, tag.attrs['title'].split()[-1])
             order.user_id = user.id
             order.game_id = self.id
             order.order = tag.attrs['class'][1]
             order.area = '??'
+            session.add(order)
 
-        session.add(order)
+
 
 
 
