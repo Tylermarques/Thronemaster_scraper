@@ -321,3 +321,14 @@ class User_Game(Base):
 
     game = relationship('Game', back_populates='users')
     user = relationship('User', back_populates='games')
+
+
+
+class StartingOrder(Base):
+    __tablename__ = 'starting_moves'
+
+    id = Column(Integer, primary_key=True)
+    game_id = Column(Integer, ForeignKey('games.id'))
+    user_id = Column(Integer, ForeignKey('users.id'))
+    area = Column(String)
+    order = Column(String)

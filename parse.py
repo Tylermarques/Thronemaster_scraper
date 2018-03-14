@@ -91,19 +91,22 @@ if __name__ == '__main__':
             print(max_game_id.first())
 
     if env == 'prod':
-            session = Session()
-            game_ids = list(set(os.listdir('game_logs/')).union(os.listdir('reviews/')))
-            game_ids = sorted(game_ids)
-            max_game_id = session.query(func.max(Game.id)).first()
-            print(max_game_id)
-            for game in game_ids:
-                if game < max_game_id:
-                    continue
-                try:
-                    main(game, session)
-                except IntegrityError:
-                    max_game_id = session.query(func.max(Game.id))
+        session = Session()
+        game_ids = list(set(os.listdir('game_logs/')).union(os.listdir('reviews/')))
+        game_ids = sorted(game_ids)
+        max_game_id = session.query(func.max(Game.thronemaster_id)).first()[0]
 
+        print(max_game_id)
+
+        for game in game_ids:
+            if not isinstance(max_game_id, int):
+                max_game_id = max_game_id.first()[0]
+            if int(game) <= max_game_id:
+                continue
+            try:
+                main(game, session)
+            except IntegrityError:
+                max_game_id = session.query(func.max(Game.id))
 
 
     if env == 'prod_threaded':
