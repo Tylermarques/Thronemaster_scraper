@@ -14,10 +14,12 @@ def downloader(game_log_id):
         with open(file_name, 'wb') as file:
             file.write(r.content)
     except Exception as e:
-        print('FAILED')
-        print(e)
+        if game_log_id % 100 == 0:
+            print('FAILED')
+            print(e)
     time.sleep(0.33)
-    print('finished')
+    if game_log_id % 100 == 0:
+        print('finished')
     return
 
 def listdir_nohidden(path):
