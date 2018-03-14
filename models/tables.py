@@ -38,6 +38,7 @@ class Game(Base):
         return f"<Game id={self.id} players={self.players}>"
 
     def parse(self, session, review=None, log=None):
+        session.add(self)
 
         self.thronemaster_id = int(re.search(r'(Events of Game )([0-9]+).+', log.find('h4').text).group(2))
         self.game_type = log.find_all('table')[-1].text.strip()
@@ -47,7 +48,8 @@ class Game(Base):
             self.parse_review(review, session)
         if log:
             self._log_parser(log, session)
-        return self
+        session.add(self)
+        session.commit()
 
     def parse_review(self, soup, session):
         def _old_review_parser(game, user_tags, session):
@@ -84,7 +86,7 @@ class Game(Base):
                     result = session.query(User).filter(User.username == user_name).first()
                     return result
 
-            session.add(game)
+
             # Associate games with users and houses
             for tag in user_tags:
                 user_game = User_Game()
@@ -93,12 +95,12 @@ class Game(Base):
                     0].replace(
                     '%20', ' ').strip()
                 user = get_user_id(_user_name, session)
-                self.players[_house] = user
+                game.players[_house] = user
                 user_game.user_id = int(user.id)
-                user_game.game_id = self.id
+                user_game.game_id = game.id
                 user_game.house = _house
                 session.add(user_game)
-            return session
+
 
         _old_review_parser(self, soup.find_all('a', {'title': 'Go to player\'s profile'}), session)
 
