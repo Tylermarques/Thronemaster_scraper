@@ -7,7 +7,7 @@ def downloader(game_log_id):
     if game_log_id % 100 == 0:
         print(f'Downloading log {game_log_id} ... ', end='')
 
-    url = f'http://game.thronemaster.net/?game={game_log_id}&review=1'
+    url = f'http://game.thronemaster.net/?game={game_log_id}&show=log'
     try:
         file_name = 'game_logs/' + str(url[url.find('game=')+5:].split('&')[0])
         r = requests.get(url)
