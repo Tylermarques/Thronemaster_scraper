@@ -52,29 +52,23 @@ class Game(Base):
         return self
 
     def parse_review(self, soup, session):
-        def get_user_obj(game_id, house, session):
-            user = session.query(User).filter(User.games.game_id == game_id) \
-                .filter(User.games.house == house).first()
-            return user
-
-        def get_game_obj(thronemaster_id, session):
-            game = session.query(Game).filter(Game.thronemaster_id == thronemaster_id).first()
-            return game
+        def get_user_obj(game, house):
+            _dict = {x.house: x for x in game.users}
+            return _dict[house]
 
         order = StartingOrder()
 
         order_tags = soup.find_all(lambda tag: tag.name == 'div'
                                                and 'Order Token' in str(tag.get('title'))
                                                and tag.get('style') != "left: -1250px; top: 0px;")
-        game = get_game_obj(self.thronemaster_id, session)
         for tag in order_tags:
-            user = get_user_obj(game.id, tag.attrs['title'].split()[-1], session)
+            user = get_user_obj(self, tag.attrs['title'].split()[-1])
             order.user_id = user.id
-            order.game_id = game.id
+            order.game_id = self.id
             order.order = tag.attrs['class'][1]
             order.area = '??'
 
-        session.add()
+        session.add(order)
 
     def _old_review_parser(self, user_tags, session):
 
