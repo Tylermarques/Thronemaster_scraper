@@ -196,7 +196,7 @@ class Game(Base):
                 pass
             elif move.phase == 'MARCH':
                 if 'Battle!' in move.log_entry:
-                    continue
+                    pass
                 else:
                     areas = determine_areas(move.log_entry)
                     units = determine_units(move.log_entry)
