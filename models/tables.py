@@ -358,6 +358,6 @@ class StartingOrder(Base):
 
     id = Column(Integer, primary_key=True)
     game_id = Column(Integer, ForeignKey('games.id'))
-    user_id = Column(Integer, ForeignKey('users.id'))
+    user_id = Column(Integer)
     area = Column(String)
     order = Column(String)
