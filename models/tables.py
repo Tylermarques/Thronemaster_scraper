@@ -44,13 +44,39 @@ class Game(Base):
         if not review and not log:
             raise ValueError("Must provide at least one soup")
         if review:
-            self._review_parser(review.find_all('a', {'title': 'Go to player\'s profile'}), session)
+            self._old_review_parser(review.find_all('a', {'title': 'Go to player\'s profile'}), session)
+            self.parse_review(review, session)
         if log:
             self._log_parser(log, session)
         session.commit()
         return self
 
-    def _review_parser(self, user_tags, session):
+    def parse_review(self, soup, session):
+        def get_user_obj(game_id, house, session):
+            user = session.query(User).filter(User.games.game_id == game_id) \
+                .filter(User.games.house == house)
+            return user
+
+        def get_game_obj(thronemaster_id, session):
+            game = session.query(Game).filter(Game.thronemaster_id == thronemaster_id)
+            return game
+
+        order = StartingOrder()
+
+        order_tags = soup.find_all(lambda tag: tag.name == 'div'
+                                               and 'Order Token' in str(tag.get('title'))
+                                               and tag.get('style') != "left: -1250px; top: 0px;")
+        game = get_game_obj(self.thronemaster_id, session)
+        for tag in order_tags:
+            user = get_user_obj(game.id, tag.attrs['title'].split()[-1])
+            order.user_id = user.id
+            order.game_id = game.id
+            order.order = tag.attrs['class'][1]
+            order.area = '??'
+
+        session.add()
+
+    def _old_review_parser(self, user_tags, session):
 
         def check_attrs_for_house(attrs):
             house_name_colours = {

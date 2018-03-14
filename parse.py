@@ -34,7 +34,7 @@ print('finished')
 def main(game_id, session):
     try:
         with open(f'game_logs/{game_id}') as game_log_file:
-            with open(f'reviews/{game_id}') as review_file:
+            with open(f'start_moves/{game_id}') as review_file:
                 game_log = BeautifulSoup(game_log_file, 'html.parser')
                 review = BeautifulSoup(review_file, 'html.parser')
                 Game().parse(session, review=review, log=game_log)
@@ -95,10 +95,6 @@ if __name__ == '__main__':
         game_ids = list(set(os.listdir('game_logs/')).union(os.listdir('reviews/')))
         game_ids = sorted(game_ids)
         max_game_id = session.query(func.max(Game.thronemaster_id)).first()[0]
-
-
-        print(max_game_id)
-
         for game in game_ids:
             if max_game_id is not None:
                 if not isinstance(max_game_id, int):
