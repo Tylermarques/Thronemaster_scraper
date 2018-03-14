@@ -195,6 +195,7 @@ class Game(Base):
             if move.phase == 'PLANNING':
                 pass
             elif move.phase == 'MARCH':
+                units = []
                 if 'Battle!' in move.log_entry:
                     pass
                 else:
