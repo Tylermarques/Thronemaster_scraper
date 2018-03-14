@@ -21,7 +21,7 @@ def main(game_id, session):
                 Game().parse(session, review=review, log=game_log)
     except Exception as e:
         with open('logs/parse_errors.txt', 'a') as log:
-            log.write(game_id + '\n')
+            log.write(str(game_id) + '\n')
     return
 
 
