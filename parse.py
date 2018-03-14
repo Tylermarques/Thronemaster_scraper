@@ -12,25 +12,6 @@ print('Creating database objects ... ', end='')
 Base.metadata.create_all(engine)
 print('finished')
 
-
-# def main(game_id):
-#
-#     try:
-#         with open(f'game_logs/{game_id}') as game_log_file:
-#             with open(f'reviews/{game_id}') as review_file:
-#                 session = Session()
-#                 game_log = BeautifulSoup(game_log_file, 'html.parser')
-#                 review = BeautifulSoup(review_file, 'html.parser')
-#                 game = Game().parse(session, review=review, log=game_log)
-#                 if not game.still_running:
-#                     session.commit()
-#     except:
-#         with open('logs/parse_errors.txt', 'a') as log:
-#             log.write(game_id + '\n')
-#     if int(game_id) % 100 == 0:
-#         print(f'Game id {game_id} finished')
-#     return game_id
-
 def main(game_id, session):
     try:
         with open(f'game_logs/{game_id}') as game_log_file:
@@ -92,10 +73,12 @@ if __name__ == '__main__':
 
     if env == 'prod':
         session = Session()
-        game_ids = list(set(os.listdir('game_logs/')).union(os.listdir('reviews/')))
-        game_ids = sorted(game_ids)
+        game_ids = range(80000, 140000)
         max_game_id = session.query(func.max(Game.thronemaster_id)).first()[0]
+
         for game in game_ids:
+            if session.query(Game).filter(Game.id == int(game)).first():
+                continue
             if max_game_id is not None:
                 if not isinstance(max_game_id, int):
                     max_game_id = max_game_id.first()[0]
