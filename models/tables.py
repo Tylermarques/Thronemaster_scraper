@@ -40,6 +40,7 @@ class Game(Base):
                           'left: 55px; top: 200px;': 'Bay of Ice', 'left: 2px; top: 543px;': 'Sunset Sea',
                           'left: 12px; top: 625px;': "Ironman's Bay", 'left: 20px; top: 830px;': 'The Golden Sound',
                           'left: 180px; top: 1335px;': 'West Summer Sea',
+                          'left: 165px; top: 1340px;': 'West Summer Sea',
                           'left: 25px; top: 1150px;': 'Redwyne Straights',
                           'left: 490px; top: 1355px;': 'East Summer Sea', 'left: 550px; top: 1180px;': 'Sea of Dorne',
                           'left: 670px; top: 1020px;': 'Shipbreaker Bay', 'left: 527px; top: 848px;': 'Blackwater Bay',
@@ -67,6 +68,7 @@ class Game(Base):
                           'left: 75px; top: 1195px;': 'Oldtown', 'left: 435px; top: 1115px;': 'Storms End',
                           'left: 220px; top: 1300px;': 'Starfall', 'left: 76px; top: 1087px;': 'Port of Oldtown',
                           'left: 143px; top: 648px;': 'Pyke', 'left: 19px; top: 745px;': 'Port of Pyke'}
+
     def __repr__(self):
         return f"<Game id={self.id} players={self.players}>"
 
@@ -149,7 +151,12 @@ class Game(Base):
             order.user_id = user.id
             order.game_id = self.id
             order.order = tag.attrs['class'][1]
-            order.area = self.locations[str(tag.attrs['style'])]
+            try:
+                order.area = self.locations[str(tag.attrs['style'])]
+            except KeyError as e:
+                print('\n ****** KEYERROR *****')
+                print(e)
+                print('*'*8 +'\n')
             try:
                 session.add(order)
             except:
