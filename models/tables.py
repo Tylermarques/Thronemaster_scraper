@@ -54,11 +54,11 @@ class Game(Base):
     def parse_review(self, soup, session):
         def get_user_obj(game_id, house, session):
             user = session.query(User).filter(User.games.game_id == game_id) \
-                .filter(User.games.house == house).first()[0]
+                .filter(User.games.house == house).first()
             return user
 
         def get_game_obj(thronemaster_id, session):
-            game = session.query(Game).filter(Game.thronemaster_id == thronemaster_id).first()[0]
+            game = session.query(Game).filter(Game.thronemaster_id == thronemaster_id).first()
             return game
 
         order = StartingOrder()
