@@ -65,7 +65,7 @@ class Game(Base):
                           'left: 295px; top: 1115px;': 'Dornish Marches', 'left: 125px; top: 1245px;': 'Three Towers',
                           'left: 75px; top: 1195px;': 'Oldtown', 'left: 435px; top: 1115px;': 'Storms End',
                           'left: 220px; top: 1300px;': 'Starfall', 'left: 76px; top: 1087px;': 'Port of Oldtown',
-                          'left: 143px; top: 648px;': 'Pyke'}
+                          'left: 143px; top: 648px;': 'Pyke', 'left: 19px; top: 745px;': 'Port of Pyke'}
 
     def __repr__(self):
         return f"<Game id={self.id} players={self.players}>"
@@ -149,7 +149,7 @@ class Game(Base):
             order.user_id = user.id
             order.game_id = self.id
             order.order = tag.attrs['class'][1]
-            order.area = self.locations[str(tag.attrs['style']) + str(tag.attrs['style'])]
+            order.area = self.locations[str(tag.attrs['style'])]
             try:
                 session.add(order)
             except:
