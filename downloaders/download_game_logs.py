@@ -1,27 +1,20 @@
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
+import requests
 from multiprocessing.dummy import Pool as ThreadPool
 import time
 import os
 
 def downloader(game_log_id):
     if game_log_id % 100 == 0:
-        print(f'Downloading review {game_log_id} ... ', end='')
-    chrome_options = Options()
-    chrome_options.add_argument('--headless')
+        print(f'Downloading log {game_log_id} ... ', end='')
+
     url = f'http://game.thronemaster.net/?game={game_log_id}&review=1'
-    browser = webdriver.Chrome(chrome_options=chrome_options)
     try:
-        file_name = 'start_moves/' + str(url[url.find('game=')+5:].split('&')[0])
-        browser.get(url)
-        innerHTML = browser.execute_script("return document.body.innerHTML")
+        file_name = 'game_logs/' + str(url[url.find('game=')+5:].split('&')[0])
+        r = requests.get(url)
         with open(file_name, 'wb') as file:
-            file.write(innerHTML.encode('utf-8'))
-        browser.close()
-        return innerHTML
+            file.write(r.content)
     except Exception as e:
         print('FAILED')
-        browser.close()
         print(e)
     time.sleep(0.33)
     print('finished')
