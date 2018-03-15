@@ -74,6 +74,7 @@ class Game(Base):
         return f"<Game id={self.id} players={self.players}>"
 
     def parse(self, session, review=None, log=None):
+        session.add(self)
         self.thronemaster_id = int(re.search(r'(Events of Game )([0-9]+).+', log.find('h4').text).group(2))
         self.game_type = log.find_all('table')[-1].text.strip()
         if not review and not log:
@@ -82,7 +83,6 @@ class Game(Base):
             self.parse_review(review, session)
         if log:
             self._log_parser(log, session)
-        session.add(self)
         return self
 
     def parse_review(self, soup, session):
@@ -116,13 +116,13 @@ class Game(Base):
                     return result
                 else:
                     user.username = user_name
-                    session.add(user)
                     result = session.query(User).filter(User.username == user_name).first()
                     return result
 
             # Associate games with users and houses
             for tag in user_tags:
                 user_game = User_Game()
+                session.add(user_game)
                 _house = check_attrs_for_house(tag.span.attrs)
                 _user_name = re.search('(?:[a-zA-Z:\/\/\.=&]+)(?:&usr=([\S]+))', tag.attrs['href']).groups(1)[
                     0].replace(
@@ -133,7 +133,6 @@ class Game(Base):
                 user_game.user_id = int(user.id)
                 user_game.game_id = game.id
                 user_game.house = _house
-                session.add(user_game)
 
         _old_review_parser(self, soup.find_all('a', {'title': 'Go to player\'s profile'}), session)
 
@@ -146,6 +145,7 @@ class Game(Base):
                                                and tag.get('style') != "left: -1250px; top: 0px;")
         for tag in order_tags:
             order = StartingOrder()
+            session.add(order)
             user = get_user_obj(self, tag.attrs['title'].split()[-1])
             order.user_id = user.id
             order.game_id = self.id
@@ -156,10 +156,7 @@ class Game(Base):
                 print('\n ****** KEYERROR *****')
                 print(e)
                 print('*' * 8 + '\n')
-            try:
-                session.add(order)
-            except:
-                session.rollback()
+
 
     def _log_parser(self, soup, session):
 
@@ -227,6 +224,7 @@ class Game(Base):
         tags = move_table.find_all(lambda _: _.name == 'tr' and len(_.contents) == 13)
         for tag in tags[1:]:
             move = Move(game_id=self.id)
+            session.add(move)
             tds = tag.find_all('td')
             ths = tag.find_all('th')
             move.move_number = int(tds[0].text)
@@ -238,7 +236,6 @@ class Game(Base):
             if 'GAME ABORTED' in move.log_entry:
                 self.end_turn = move.turn_number
                 self.aborted = True
-                session.add(move)
                 self.end_date = move.date
                 return self
             # move.house =
@@ -303,7 +300,6 @@ class Game(Base):
                 raise ValueError('No game id in Move')
             if not move.phase:
                 raise ValueError('No phase in move')
-            session.add(move)
 
             # print(f'Turn Number: {move.turn_number}\nPhase: {move.phase}\nHouse={determine_house(move.log_entry)}')
             # print(move)
