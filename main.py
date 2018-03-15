@@ -43,7 +43,7 @@ def download_review(game_id):
     return innerHTML
 
 
-def parse(log_file, review_file, session):
+def parse(game_id, log_file, review_file, session):
     try:
         game_log = BeautifulSoup(log_file, 'html.parser')
         review = BeautifulSoup(review_file, 'html.parser')
@@ -70,7 +70,7 @@ def main():
         except FileNotFoundError:
             log = download_log(game_id)
         finally:
-            game = parse(log, review, session)
+            game = parse(game_id, log, review, session)
             if game:
                 session.commit()
             else:
