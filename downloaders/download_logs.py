@@ -25,13 +25,12 @@ def downloader(game_log_id):
 
     chrome_options = Options()
     chrome_options.add_argument('--headless')
-    url = f'http://game.thronemaster.net/?game={game_log_id}&review=1'
+    url = f'http://game.thronemaster.net/?game={game_log_id}&show=log'
     try:
         browser = webdriver.Chrome(chrome_options=chrome_options)
-        file_name = 'start_moves/' + str(url[url.find('game=')+5:].split('&')[0])
         browser.get(url)
         innerHTML = browser.execute_script("return document.body.innerHTML")
-        with open(file_name, 'wb') as file:
+        with open(f'reviews/{game_id}', 'wb') as file:
             file.write(innerHTML.encode('utf-8'))
         browser.close()
         return innerHTML
