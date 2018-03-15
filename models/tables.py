@@ -74,8 +74,6 @@ class Game(Base):
         return f"<Game id={self.id} players={self.players}>"
 
     def parse(self, session, review=None, log=None):
-        session.add(self)
-
         self.thronemaster_id = int(re.search(r'(Events of Game )([0-9]+).+', log.find('h4').text).group(2))
         self.game_type = log.find_all('table')[-1].text.strip()
         if not review and not log:
@@ -85,7 +83,7 @@ class Game(Base):
         if log:
             self._log_parser(log, session)
         session.add(self)
-        session.commit()
+        return self
 
     def parse_review(self, soup, session):
         def _old_review_parser(game, user_tags, session):

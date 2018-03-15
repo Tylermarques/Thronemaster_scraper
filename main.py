@@ -43,13 +43,15 @@ def download_review(game_id):
     return innerHTML
 
 
-def parse(log, review, session):
+def parse(log_file, review_file, session):
     try:
-        game_log = BeautifulSoup(log, 'html.parser')
-        review = BeautifulSoup(review, 'html.parser')
-        Game().parse(session, review=review, log=game_log)
-        session.commit()
-        return
+        game_log = BeautifulSoup(log_file, 'html.parser')
+        review = BeautifulSoup(review_file, 'html.parser')
+        if game_log.text == "ERROR: Invalid Game ID!":
+            return
+        if review.text == "ERROR: Invalid Game ID!":
+            return
+        return Game().parse(session, review=review, log=game_log)
     except Exception as e:
         print('\n' + '*' * 10 + f'\n ERROR on ID {game_id}' + '\n' + '*' * 10)
         raise e
@@ -57,8 +59,8 @@ def parse(log, review, session):
 
 def main():
     game_list = range(80000, 140000)
-    session = Session()
     for game_id in game_list:
+        session = Session()
         try:
             review = open(f'reviews/{game_id}')
         except FileNotFoundError:
@@ -68,7 +70,13 @@ def main():
         except FileNotFoundError:
             log = download_log(game_id)
         finally:
-            parse(log, review, session)
+            game = parse(log, review, session)
+            if game:
+                session.commit()
+            else:
+                session.rollback()
+            session.close()
+
 
 
 print('Creating database objects ... ', end='')
