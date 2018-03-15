@@ -111,6 +111,7 @@ class Game(Base):
 
             def get_user_id(user_name, session):
                 user = User()
+                session.add(user)
                 result = session.query(User).filter(User.username == user_name).first()
                 if result:
                     return result
@@ -128,7 +129,6 @@ class Game(Base):
                     0].replace(
                     '%20', ' ').strip()
                 user = get_user_id(_user_name, session)
-                session.add(user)
                 game.players[_house] = user
                 user_game.user_id = int(user.id)
                 user_game.game_id = game.id
